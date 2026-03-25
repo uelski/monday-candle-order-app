@@ -24,6 +24,7 @@ const OrderForm = ({ monday }) => {
     monday.listen("context", (res) => {
       setContext(res.data);
     });
+    
 
     let cancelled = false;
 
@@ -88,11 +89,12 @@ const OrderForm = ({ monday }) => {
 
     try {
       const columnValues = JSON.stringify({
-        scent_1: { text: selectedScents[0].name },
-        scent_2: { text: selectedScents[1].name },
-        scent_3: { text: selectedScents[2].name },
-        quantity: { number: Number(quantity) },
-        status: { label: "New" },
+        dropdown: { labels: selectedScents.map(s => s.name) },
+        numbers:  quantity,
+        status:   { label: "New Order" },
+        text:     firstName,
+        text6:    lastName,
+        date_1:   { date: new Date().toISOString().split('T')[0] },
       });
 
       await monday.api(
