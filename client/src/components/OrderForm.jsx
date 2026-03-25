@@ -24,6 +24,7 @@ const OrderForm = ({ monday }) => {
     monday.listen("context", (res) => {
       setContext(res.data);
     });
+    
 
     let cancelled = false;
 
@@ -54,27 +55,27 @@ const OrderForm = ({ monday }) => {
     };
   }, []);
 
-  const handleScentSelect = useCallback(
-    (option) => {
-      if (!option || selectedScents.length >= MAX_SCENTS) return;
-      const fragrance = fragrances.find((f) => f.id === option.value);
-      if (!fragrance) return;
-      if (selectedScents.some((s) => s.id === fragrance.id)) return;
-      setSelectedScents((prev) => [...prev, fragrance]);
+  const handleScentChange = useCallback(
+    (options) => {
+      if (!options || !Array.isArray(options)) {
+        setSelectedScents([]);
+        return;
+      }
+      const scents = options
+        .slice(0, MAX_SCENTS)
+        .map((opt) => fragrances.find((f) => f.id === opt.value))
+        .filter(Boolean);
+      setSelectedScents(scents);
     },
-    [fragrances, selectedScents]
+    [fragrances]
   );
-
-  const handleScentRemove = useCallback((scentId) => {
-    setSelectedScents((prev) => prev.filter((s) => s.id !== scentId));
-  }, []);
 
   const isFormValid =
     firstName.trim() !== "" &&
     lastName.trim() !== "" &&
-    Number(quantity) >= 1 &&
+    Number(quantity) > 0 &&
     selectedScents.length === MAX_SCENTS;
-
+  
   const resetForm = () => {
     setSelectedScents([]);
     setFirstName("");
@@ -88,11 +89,12 @@ const OrderForm = ({ monday }) => {
 
     try {
       const columnValues = JSON.stringify({
-        scent_1: { text: selectedScents[0].name },
-        scent_2: { text: selectedScents[1].name },
-        scent_3: { text: selectedScents[2].name },
-        quantity: { number: Number(quantity) },
-        status: { label: "New" },
+        dropdown: { labels: selectedScents.map(s => s.name) },
+        numbers:  quantity,
+        status:   { label: "New Order" },
+        text:     firstName,
+        text6:    lastName,
+        date_1:   { date: new Date().toISOString().split('T')[0] },
       });
 
       await monday.api(
@@ -159,8 +161,7 @@ const OrderForm = ({ monday }) => {
         <FragranceSelector
           fragrances={fragrances}
           selectedScents={selectedScents}
-          onSelect={handleScentSelect}
-          onRemove={handleScentRemove}
+          onChange={handleScentChange}
           onClearAll={() => setSelectedScents([])}
         />
       </div>
