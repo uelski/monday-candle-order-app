@@ -9,6 +9,8 @@ import { AttentionBox } from "@vibe/core";
 // Usage of mondaySDK example, for more information visit here: https://developer.monday.com/apps/docs/introduction-to-the-sdk/
 const monday = mondaySdk();
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const App = () => {
   const [context, setContext] = useState();
 
@@ -19,8 +21,19 @@ const App = () => {
 
     // TODO: set up event listeners, Here`s an example, read more here: https://developer.monday.com/apps/docs/mondaylisten/
     monday.listen("context", (res) => {
+      console.log("context test", res.data);
       setContext(res.data);
     });
+
+    fetch(`${API_URL}/api/health`)
+      .then(res => res.json())
+      .then(data => console.log("health test", data))
+      .catch(err => console.error("health test error", err));
+
+    fetch(`${API_URL}/api/fragrances`)
+      .then(res => res.json())
+      .then(data => console.log("fragrances test", data))
+      .catch(err => console.error("fragrances test error", err));
   }, []);
 
   //Some example what you can do with context, read more here: https://developer.monday.com/apps/docs/mondayget#requesting-context-and-settings-data
