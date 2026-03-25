@@ -7,9 +7,21 @@ body {
   height: 100vh;
   width: 100vw;
   display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 16px;
+  background: rgb(237 241 252);
+}
+
+.app-content {
+  width: 100%;
+  height: fit-content;
+  display: flex;
   flex-direction: column;
   align-items: center;
-  box-sizing: border-box;
+  border: 1px solid var(--ui-border-color, #d0d4e4);
+  padding-bottom: 10rem;
+  background-color: white;
 }
 
 .app-header {

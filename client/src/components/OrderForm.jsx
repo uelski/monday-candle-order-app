@@ -161,6 +161,7 @@ const OrderForm = ({ monday }) => {
           selectedScents={selectedScents}
           onSelect={handleScentSelect}
           onRemove={handleScentRemove}
+          onClearAll={() => setSelectedScents([])}
         />
       </div>
 

@@ -3,7 +3,7 @@ import { Dropdown, Chips, Flex } from "@vibe/core";
 
 const MAX_SCENTS = 3;
 
-const FragranceSelector = ({ fragrances, selectedScents, onSelect, onRemove }) => {
+const FragranceSelector = ({ fragrances, selectedScents, onSelect, onRemove, onClearAll }) => {
   const dropdownOptions = fragrances
     .filter((f) => !selectedScents.some((s) => s.id === f.id))
     .map((f) => ({
@@ -24,7 +24,8 @@ const FragranceSelector = ({ fragrances, selectedScents, onSelect, onRemove }) =
           options={dropdownOptions}
           onChange={onSelect}
           disabled={selectedScents.length >= MAX_SCENTS}
-          clearable={false}
+          clearable
+          onClear={onClearAll}
           multi
           multiline
           size="medium"
