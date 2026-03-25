@@ -9,7 +9,12 @@ export default defineConfig(() => {
     plugins: [react()],
     server: {
       port: 8301,
-      allowedHosts: ['.apps-tunnel.monday.app']
+      allowedHosts: ['.apps-tunnel.monday.app'],
+      proxy: {
+        '/api': {
+          target: process.env.VITE_API_URL
+        },
+      },
     }
   };
 });
