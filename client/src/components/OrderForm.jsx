@@ -145,9 +145,6 @@ const OrderForm = ({ monday }) => {
 
   return (
     <Box className="order-form-container">
-      <Heading type="h2" className="form-title">
-        New Candle Order
-      </Heading>
 
       <div className="form-grid">
         <CustomerFields
