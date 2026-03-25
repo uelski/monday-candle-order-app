@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import healthRouter from "./routes/health";
 import fragrancesRouter from "./routes/fragrances";
+import webhookRouter from "./routes/webhook";
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;
@@ -19,7 +20,7 @@ app.use(express.json());
 
 app.use("/api", healthRouter);
 app.use("/api/fragrances", fragrancesRouter);
-
+app.use("/api/webhook", webhookRouter);
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
