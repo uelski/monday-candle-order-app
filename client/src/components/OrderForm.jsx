@@ -6,8 +6,7 @@ import OrderFormSkeleton from "./OrderFormSkeleton";
 
 const MAX_SCENTS = 3;
 
-const OrderForm = ({ monday }) => {
-  const [context, setContext] = useState(null);
+const OrderForm = ({ monday, context }) => {
   const [fragrances, setFragrances] = useState([]);
   const [selectedScents, setSelectedScents] = useState([]);
   const [firstName, setFirstName] = useState("");
@@ -21,10 +20,6 @@ const OrderForm = ({ monday }) => {
 
   useEffect(() => {
     monday.execute("valueCreatedForUser");
-    monday.listen("context", (res) => {
-      setContext(res.data);
-    });
-    
 
     let cancelled = false;
 

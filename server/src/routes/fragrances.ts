@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { storage } from "../storage";
 import { Fragrance, FragranceInput } from "../types/fragrance";
+import { addDropdownLabel, renameDropdownLabel, deactivateDropdownLabel } from "../helpers/fragrances";
 
 const router = Router();
 const STORAGE_KEY = "fragrances";
@@ -23,9 +24,9 @@ router.get("/", async (_req: Request, res: Response) => {
 
 // POST /api/fragrances
 router.post("/", async (req: Request, res: Response) => {
-  const body = req.body as FragranceInput;
+  const { boardId, ...fragranceData } = req.body as FragranceInput & { boardId?: string };
 
-  if (!body.name || !body.category) {
+  if (!fragranceData.name || !fragranceData.category) {
     res.status(400).json({ error: "name and category are required" });
     return;
   }
@@ -33,10 +34,10 @@ router.post("/", async (req: Request, res: Response) => {
   const now = new Date().toISOString();
   const fragrance: Fragrance = {
     id: crypto.randomUUID(),
-    name: body.name,
-    description: body.description ?? "",
-    category: body.category,
-    image_url: body.image_url ?? "",
+    name: fragranceData.name,
+    description: fragranceData.description ?? "",
+    category: fragranceData.category,
+    image_url: fragranceData.image_url ?? "",
     created_at: now,
     updated_at: now,
   };
@@ -45,13 +46,22 @@ router.post("/", async (req: Request, res: Response) => {
   fragrances.push(fragrance);
   await writeFragrances(fragrances);
 
+  // update board dropdown column
+  if (boardId) {
+    try {
+      await addDropdownLabel(boardId, fragrance.name);
+    } catch (err) {
+      console.error("Failed to add dropdown label:", err);
+    }
+  }
+
   res.status(201).json(fragrance);
 });
 
 // PUT /api/fragrances/:id
 router.put("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
-  const body = req.body as Partial<FragranceInput>;
+  const { boardId, ...fragranceData } = req.body as FragranceInput & { boardId?: string };
 
   const fragrances = await readFragrances();
   const index = fragrances.findIndex((f) => f.id === id);
@@ -61,22 +71,34 @@ router.put("/:id", async (req: Request, res: Response) => {
     return;
   }
 
+  const oldName = fragrances[index].name;
+
   fragrances[index] = {
     ...fragrances[index],
-    ...body,
+    ...fragranceData,
     id,
     created_at: fragrances[index].created_at,
     updated_at: new Date().toISOString(),
   };
 
   await writeFragrances(fragrances);
+
+  // update board dropdown column
+  if (boardId && oldName !== fragranceData.name) {
+    try {
+      await renameDropdownLabel(boardId, oldName, fragranceData.name);
+    } catch (err) {
+      console.error("Failed to rename dropdown label:", err);
+    }
+  }
+
   res.json(fragrances[index]);
 });
 
 // DELETE /api/fragrances/:id
 router.delete("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
-
+  const { boardId } = req.body;
   const fragrances = await readFragrances();
   const index = fragrances.findIndex((f) => f.id === id);
 
@@ -85,8 +107,19 @@ router.delete("/:id", async (req: Request, res: Response) => {
     return;
   }
 
+  // update board dropdown column
+  const deactivatedName = fragrances[index].name;
+
   const [deleted] = fragrances.splice(index, 1);
   await writeFragrances(fragrances);
+
+  if (boardId) {
+    try {
+      await deactivateDropdownLabel(boardId, deactivatedName);
+    } catch (err) {
+      console.error("Failed to deactivate dropdown label:", err);
+    }
+  }
   res.json(deleted);
 });
 
