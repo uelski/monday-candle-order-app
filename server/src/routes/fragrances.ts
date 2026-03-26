@@ -2,6 +2,9 @@ import { Router, Request, Response } from "express";
 import { storage } from "../storage";
 import { Fragrance, FragranceInput } from "../types/fragrance";
 import { addDropdownLabel, renameDropdownLabel, deactivateDropdownLabel } from "../helpers/fragrances";
+import {Logger} from '@mondaycom/apps-sdk';
+
+const logger = new Logger('fragrances-router');
 
 const router = Router();
 const STORAGE_KEY = "fragrances";
@@ -51,7 +54,8 @@ router.post("/", async (req: Request, res: Response) => {
     try {
       await addDropdownLabel(boardId, fragrance.name);
     } catch (err) {
-      console.error("Failed to add dropdown label:", err);
+      logger.error(`Failed to add dropdown label: ${fragrance.name} to board: ${boardId}`);
+      logger.error(`Error: ${JSON.stringify(err)}`);
     }
   }
 
@@ -88,7 +92,8 @@ router.put("/:id", async (req: Request, res: Response) => {
     try {
       await renameDropdownLabel(boardId, oldName, fragranceData.name);
     } catch (err) {
-      console.error("Failed to rename dropdown label:", err);
+      logger.error(`Failed to rename dropdown label: ${oldName} to ${fragranceData.name} on board: ${boardId}`);
+      logger.error(`Error: ${JSON.stringify(err)}`);
     }
   }
 
@@ -117,7 +122,8 @@ router.delete("/:id", async (req: Request, res: Response) => {
     try {
       await deactivateDropdownLabel(boardId, deactivatedName);
     } catch (err) {
-      console.error("Failed to deactivate dropdown label:", err);
+      logger.error(`Failed to deactivate dropdown label: ${deactivatedName} from board: ${boardId}`);
+      logger.error(`Error: ${JSON.stringify(err)}`);
     }
   }
   res.json(deleted);

@@ -1,14 +1,24 @@
-import mondaySdk from 'monday-sdk-js';
 import {Logger} from '@mondaycom/apps-sdk';
 
 const logger = new Logger('fragrances');
 
-const monday = mondaySdk({ token: process.env.MONDAY_API_TOKEN });
-
 // ── helpers ──────────────────────────────────────────────────────────────────
 
+const mondayFetch = async (query: string, variables?: Record<string, any>) => {
+    const res = await fetch('https://api.monday.com/v2', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': process.env.MONDAY_API_TOKEN!,
+        'API-Version': '2025-10'
+      },
+      body: JSON.stringify({ query, variables })
+    });
+    return res.json();
+};
+
 const getDropdownSettings = async (boardId: string) => {
-    const result = await monday.api(`
+    const result = await mondayFetch(`
       query {
         boards(ids: [${boardId}]) {
           columns(ids: ["dropdown"]) {
@@ -19,9 +29,8 @@ const getDropdownSettings = async (boardId: string) => {
       }
     `);
     const column = result.data.boards[0].columns[0];
-    logger.info(`Column: ${JSON.stringify(column)}`);
     const settings = column.settings;
-    logger.info(`Settings: ${JSON.stringify(settings)}`);
+    logger.info(`Labels in get settings: ${JSON.stringify(settings.labels)}`);
     return {
       settings,                                                    // ← return full settings
       labels: settings.labels as { id: number; label: string }[],
@@ -32,12 +41,13 @@ const getDropdownSettings = async (boardId: string) => {
 const updateDropdownColumn = async (
     boardId: string,
     revision: string,
-    existingSettings: Record<string, any>,                        // ← accept full settings
-    labels: { id: number; label: string; is_deactivated?: boolean }[]
+    existingSettings: Record<string, any>,
+    labels: { id?: number; label: string; is_deactivated?: boolean }[]
   ) => {
     const { labels: _labels, ...restSettings } = existingSettings;
-    return monday.api(`
-      mutation($settings: DropdownColumnSettingsInput!) {
+    logger.info(`Labels in update dropdown column: ${JSON.stringify(labels)}`);
+    return mondayFetch(`
+      mutation($settings: UpdateDropdownColumnSettingsInput!) {
         update_dropdown_column(
           board_id: ${boardId},
           id: "dropdown",
@@ -46,11 +56,8 @@ const updateDropdownColumn = async (
         ) { id }
       }
     `, {
-      variables: {
-        settings: {
-          ...restSettings,  // ← preserve all existing settings
-          labels               // ← only override labels
-        }
+      settings: {        // ← directly, no wrapping in { variables: }
+        labels
       }
     });
 };
@@ -59,25 +66,28 @@ const updateDropdownColumn = async (
 
 export const addDropdownLabel = async (boardId: string, name: string) => {
     const { settings, labels, revision } = await getDropdownSettings(boardId);
-    const nextId = labels.length > 0 ? Math.max(...labels.map(l => l.id)) + 1 : 1;
-    await updateDropdownColumn(boardId, revision, settings, [
+    const updateResult = await updateDropdownColumn(boardId, revision, settings, [
       ...labels,
-      { id: nextId, label: name }
+      { label: name }
     ]);
+    logger.error(`Update error: ${JSON.stringify(updateResult.errors)}`);
 };
   
-  export const renameDropdownLabel = async (boardId: string, oldName: string, newName: string) => {
+export const renameDropdownLabel = async (boardId: string, oldName: string, newName: string) => {
     const { settings, labels, revision } = await getDropdownSettings(boardId);
-    const updated = labels.map(l =>
-      l.label === oldName ? { ...l, label: newName } : l
-    );
-    await updateDropdownColumn(boardId, revision, settings, updated);
+    const index = labels.findIndex(l => l.label === oldName);
+    if (index === -1) return;
+    labels[index] = { ...labels[index], label: newName }; 
+    const updateResult = await updateDropdownColumn(boardId, revision, settings, labels);
+    logger.error(`Update error: ${JSON.stringify(updateResult.errors)}`);
+    await getDropdownSettings(boardId);
 };
   
-  export const deactivateDropdownLabel = async (boardId: string, name: string) => {
+export const deactivateDropdownLabel = async (boardId: string, name: string) => {
     const { settings, labels, revision } = await getDropdownSettings(boardId);
     const updated = labels.map(l =>
       l.label === name ? { ...l, is_deactivated: true } : l
     );
-    await updateDropdownColumn(boardId, revision, settings, updated);
+    const updateResult = await updateDropdownColumn(boardId, revision, settings, updated);
+    logger.error(`Update error: ${JSON.stringify(updateResult.errors)}`);
 };
