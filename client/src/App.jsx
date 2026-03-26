@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./App.css";
 import mondaySdk from "monday-sdk-js";
 import "@vibe/core/tokens";
@@ -11,6 +11,13 @@ const monday = mondaySdk();
 
 const App = () => {
   const [view, setView] = useState("order");
+  const [context, setContext] = useState(null);
+
+  useEffect(() => {
+    monday.listen("context", (res) => {
+      setContext(res.data);
+    });
+  }, []);
 
   const toggleView = () => {
     setView((v) => (v === "order" ? "fragrances" : "order"));
@@ -21,9 +28,9 @@ const App = () => {
       <Box rounded="small" className="app-content">
         <AppHeader view={view} onMenuClick={toggleView} />
         {view === "order" ? (
-          <OrderForm monday={monday} />
+          <OrderForm monday={monday} context={context} />
         ) : (
-          <FragranceManager />
+          <FragranceManager boardId={context?.boardId} />
         )}
       </Box>
     </div>

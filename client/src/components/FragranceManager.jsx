@@ -9,7 +9,7 @@ import FragranceGate from "./FragranceGate";
 
 const EMPTY_FORM = { name: "", description: "", category: "", image_url: "" };
 
-const FragranceManager = () => {
+const FragranceManager = ({ boardId }) => {
   const [unlocked, setUnlocked] = useState(false);
   const [fragrances, setFragrances] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -81,7 +81,7 @@ const FragranceManager = () => {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, boardId }),
       });
       if (!res.ok) throw new Error("Failed to save fragrance");
       closeModal();
@@ -98,6 +98,8 @@ const FragranceManager = () => {
     try {
       const res = await fetch(`${apiUrl}/api/fragrances/${deleteTarget.id}`, {
         method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ boardId }),
       });
       if (!res.ok) throw new Error("Failed to delete fragrance");
       setDeleteTarget(null);
