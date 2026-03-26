@@ -70,3 +70,72 @@ body {
 .form-actions {
   margin-top: 24px;
 }
+
+/* Fragrance Manager */
+
+.fragrance-manager-container {
+  width: 100%;
+  max-width: 720px;
+  padding: 24px;
+  margin-top: 8px;
+}
+
+.fragrance-manager-toolbar {
+  margin-bottom: 16px;
+}
+
+.fragrance-manager-error {
+  margin-bottom: 16px;
+}
+
+.fragrance-manager-status {
+  padding: 32px 0;
+  text-align: center;
+}
+
+.fragrance-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fragrance-card {
+  padding: 12px 16px;
+  border: 1px solid var(--ui-border-color, #d0d4e4);
+  border-radius: 8px;
+}
+
+.fragrance-card:hover {
+  background-color: #f6f7fb;
+}
+
+.fragrance-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.fragrance-card-desc {
+  margin-top: 4px;
+}
+
+.fragrance-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Fragrance Gate */
+
+.fragrance-gate {
+  width: 100%;
+  max-width: 720px;
+  padding: 48px 24px;
+  margin-top: 24px;
+}
+
+.fragrance-gate-input {
+  width: 240px;
+}
