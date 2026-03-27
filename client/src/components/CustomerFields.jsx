@@ -11,6 +11,7 @@ const CustomerFields = ({ firstName, lastName, quantity, onFirstNameChange, onLa
           value={firstName}
           onChange={onFirstNameChange}
           size="medium"
+          required
         />
       </div>
       <div className="form-field">
@@ -20,6 +21,7 @@ const CustomerFields = ({ firstName, lastName, quantity, onFirstNameChange, onLa
           value={lastName}
           onChange={onLastNameChange}
           size="medium"
+          required
         />
       </div>
       <div className="form-field">
@@ -30,6 +32,7 @@ const CustomerFields = ({ firstName, lastName, quantity, onFirstNameChange, onLa
           onChange={onQuantityChange}
           type="number"
           size="medium"
+          required
         />
       </div>
     </div>
