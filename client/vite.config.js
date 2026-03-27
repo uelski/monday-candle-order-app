@@ -15,6 +15,11 @@ export default defineConfig(() => {
           target: process.env.VITE_API_URL
         },
       },
-    }
+    },
+    test: {
+      environment: 'jsdom',
+      setupFiles: './src/test/setup.js',
+      globals: true,
+    },
   };
 });
